@@ -79,3 +79,18 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
             {"error": "Error Occured While Fetching Data", "success_status": False},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+
+def get_paginated_data(request, **kwargs) -> response.JsonResponse:
+    """
+    Gets Data from database when hit with GET requests & returns
+    paginated responses
+
+    Args:
+        request
+        **kwargs
+
+    Returns:
+        response.JsonResponse
+    """
+    pass
