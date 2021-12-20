@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from django.http import response
 
 from .utils import fetch_vid_data, get_paginated_data
+from core.pagination import CustomPagination
 
 class FetchVidData(APIView):
     permission_classes = (AllowAny,)
@@ -25,6 +26,7 @@ class FetchVidData(APIView):
         return vid_data
 
 class GetStoredData(APIView):
+    pagination_class = CustomPagination
     permission_classes = (AllowAny,)
 
     def get(self, request, **kwargs) -> response.JsonResponse:

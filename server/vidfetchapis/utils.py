@@ -47,11 +47,16 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
             q=search_query,
         )
 
+        storage_dict = {}
+
         response = request.execute()
         res_data = response["items"]
         print(res_data)
-        for data in res_data:
-            vid_data = data["snippet"]
+
+        video_data = {}
+
+        for items in res_data:
+            vid_data = items["snippet"]
 
             publish_date = vid_data["publishedAt"]
             title = vid_data["title"]
@@ -65,6 +70,24 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
             medium_url = medium_thumbnail["url"]
             high_thumbnail = thumbnail_data["high"]
             high_url = high_thumbnail["url"]
+
+            thumbnail_urls = {}
+            thumbnail_urls["default"] = default_url
+            thumbnail_urls["medium"] = medium_url
+            thumbnail_urls["high"] = high_url
+
+            data = {}
+            data["title"] = title
+            data["description"] = description
+            data["channel"] = channel
+            data["thumbnail_urls"] = thumbnail_urls
+
+            video_data[publish_date] = data
+
+        search_query = search_query.upper()
+        storage_dict[search_query] = video_data
+
+        Fetched_Data.insert_data(search_query, storage_dict)
 
         youtube_service.close()
 
