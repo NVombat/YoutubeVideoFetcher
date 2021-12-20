@@ -4,8 +4,8 @@ from typing import Dict
 import pymongo
 import os
 
+from .errors import KeywordNotFoundError
 from core.settings import DATABASE
-from server.vidfetchapis.errors import KeywordNotFoundError
 
 load_dotenv()
 
