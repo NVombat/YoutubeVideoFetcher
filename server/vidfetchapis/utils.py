@@ -1,4 +1,4 @@
-#RESOURCE - https://github.com/googleapis/google-api-python-client -> DOCS
+# RESOURCE - https://github.com/googleapis/google-api-python-client -> DOCS
 
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta
@@ -10,6 +10,7 @@ import os
 from . import Fetched_Data
 
 load_dotenv()
+
 
 def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
     """
@@ -32,7 +33,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
         print(search_query, weeks)
 
-        youtube_service = build('youtube', 'v3', developerKey=os.getenv("API_KEY"))
+        youtube_service = build("youtube", "v3", developerKey=os.getenv("API_KEY"))
 
         # From Which Date Are Results Wanted
         from_date = datetime.utcnow() - timedelta(weeks=weeks)

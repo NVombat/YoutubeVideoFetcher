@@ -18,7 +18,11 @@ class VideoFetchData:
         client = pymongo.MongoClient(DATABASE["mongo_uri"])
         self.db = client[DATABASE["db"]][os.getenv("DATA_COLLECTION")]
 
-    def insert_data(self, search_query: str, video_data: Dict[Dict[str, str, str, Dict[str, str, str]]]) -> None:
+    def insert_data(
+        self,
+        search_query: str,
+        video_data: Dict[Dict[str, str, str, Dict[str, str, str]]],
+    ) -> None:
         """Insert search query and video data into db
 
         Args:
@@ -28,7 +32,7 @@ class VideoFetchData:
         Returns:
             None
         """
-        if self.db.find_one({search_query: {"$exists":1}}):
+        if self.db.find_one({search_query: {"$exists": 1}}):
             print("SEARCH QUERY EXISTS - UPDATE ENTRY")
             pass
         else:
@@ -45,7 +49,7 @@ class VideoFetchData:
             response.JsonResponse
         """
         if data := self.db.find(
-            {search_query: {"$exists":1}},
+            {search_query: {"$exists": 1}},
             {
                 "_id": 0,
             },
@@ -55,5 +59,7 @@ class VideoFetchData:
             json_data = response.JsonResponse(docs, safe=False)
             return json_data
 
-        raise KeywordNotFoundError(f"Data For {search_query} Not Found In Database - Fetching Data Please Wait While We Return Your Results")
-        #While Excepting run API again
+        raise KeywordNotFoundError(
+            f"Data For {search_query} Not Found In Database - Fetching Data Please Wait While We Return Your Results"
+        )
+        # While Excepting run API again
