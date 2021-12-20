@@ -28,6 +28,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
         search_query = request.data.get("Query")
         weeks = request.data.get("Weeks")
+        weeks = int(weeks)
 
         print(search_query, weeks)
 

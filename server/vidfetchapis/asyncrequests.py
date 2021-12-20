@@ -28,6 +28,9 @@ base_url = "https://www.googleapis.com/youtube/v3/search"
 url = base_url + "?key=" + key + "&part=snippet&oder=date&type=video&q=" + search_query + "&publishedAfter=" + publishedAfter
 
 response = client.get(url=url)
+content = response.content.decode()
+content.replace("\n", "")
+print(content)
 print(response.status_code)
 
 
