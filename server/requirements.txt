@@ -8,3 +8,6 @@ requests==2.26.0
 sqlparse==0.4.2
 uritemplate==4.1.1
 google-api-python-client==2.33.0
+uvicorn==0.13.4
+httpx==0.18.1
+asyncio==3.4.3
