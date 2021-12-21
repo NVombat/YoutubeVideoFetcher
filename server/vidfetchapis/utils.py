@@ -5,7 +5,10 @@ from datetime import datetime, timedelta
 from rest_framework import status
 from django.http import response
 from dotenv import load_dotenv
+import requests
 import os
+
+from server.vidfetchapis.errors import KeywordNotFoundError
 
 from . import Fetched_Data
 
@@ -27,8 +30,8 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
         print("GET REQUEST")
         print("Request Object DATA:", request.data)
 
-        search_query = request.data.get("Query")
-        weeks = request.data.get("Weeks")
+        search_query = request.query_params.get("Query")
+        weeks = request.query_params.get("Weeks")
         weeks = int(weeks)
 
         print(search_query, weeks)
@@ -118,4 +121,31 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
     Returns:
         response.JsonResponse
     """
-    pass
+    try:
+        print("GET REQUEST")
+        print("Request Object DATA:", request.data)
+
+        search_query = request.query_params.get("Query")
+        print(search_query)
+
+        search_query = search_query.upper()
+        data = Fetched_Data.fetch_user_data(search_query)
+
+        return data
+
+    except KeywordNotFoundError as knf:
+        api_url = "http://127.0.0.1:8000/api/fetchvids"
+        client = requests.Session()
+        payload = {"Query": "Soccer", "Weeks": 10}
+        client.get(url=api_url, params=payload)
+
+        return response.JsonResponse(
+            {"error": str(knf), "success_status": False},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    except Exception as e:
+        print(e)
+        return response.JsonResponse(
+            {"error": "Error Occured While Getting Data", "success_status": False},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
