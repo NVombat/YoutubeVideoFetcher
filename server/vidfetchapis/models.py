@@ -1,6 +1,5 @@
 from django.http import response
 from dotenv import load_dotenv
-from typing import Dict
 import pymongo
 import os
 
@@ -21,7 +20,7 @@ class VideoFetchData:
     def insert_data(
         self,
         search_query: str,
-        video_data: Dict[Dict[str, str, str, Dict[str, str, str]]],
+        video_data: dict,
     ) -> None:
         """Insert search query and video data into db
 
