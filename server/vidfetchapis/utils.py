@@ -136,10 +136,7 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
     except KeywordNotFoundError as knf:
         api_url = "http://127.0.0.1:8000/api/fetchvids"
         client = requests.Session()
-        payload = {
-            "Query": "Soccer",
-            "Weeks": 10
-        }
+        payload = {"Query": "Soccer", "Weeks": 10}
         client.get(url=api_url, params=payload)
 
         return response.JsonResponse(

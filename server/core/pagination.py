@@ -18,21 +18,27 @@ class CustomPagination(pagination.PageNumberPagination):
         if self.page.has_previous():
             previous = self.page.previous_page_number()
 
-        return Response({
-            'results': data,
-            'meta': {
-                'pagination': OrderedDict([
-                    ('page', self.page.number),
-                    ('pages', self.page.paginator.num_pages),
-                    ('count', self.page.paginator.count),
-                ])
-            },
-            'links': OrderedDict([
-                ('first', self.build_link(1)),
-                ('last', self.build_link(self.page.paginator.num_pages)),
-                ('next', self.build_link(next)),
-                ('prev', self.build_link(previous))
-            ])
-        })
+        return Response(
+            {
+                "results": data,
+                "meta": {
+                    "pagination": OrderedDict(
+                        [
+                            ("page", self.page.number),
+                            ("pages", self.page.paginator.num_pages),
+                            ("count", self.page.paginator.count),
+                        ]
+                    )
+                },
+                "links": OrderedDict(
+                    [
+                        ("first", self.build_link(1)),
+                        ("last", self.build_link(self.page.paginator.num_pages)),
+                        ("next", self.build_link(next)),
+                        ("prev", self.build_link(previous)),
+                    ]
+                ),
+            }
+        )
         # response['next'] = self.get_next_link()
         # response['previous'] = self.get_previous_link()
