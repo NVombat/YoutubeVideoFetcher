@@ -31,9 +31,9 @@ class VideoFetchData:
         Returns:
             None
         """
-        if self.db.find_one({search_query: {"$exists": 1}}):
+        if value := self.db.find_one({search_query: {"$exists": 1}}):
             print("SEARCH QUERY EXISTS - UPDATE ENTRY")
-            pass
+            value.update(video_data)
         else:
             print("SEARCH QUERY DOES NOT EXIST - CREATE NEW ENTRY")
             self.db.insert_one(video_data)
@@ -59,6 +59,5 @@ class VideoFetchData:
             return json_data
 
         raise KeywordNotFoundError(
-            f"Data For {search_query} Not Found In Database - Fetching Data Please Wait While We Return Your Results"
+            f"Data For {search_query} Not Found In Database - Fetching Results For {search_query}. Please Try Again In A Moment"
         )
-        # While Excepting run API again

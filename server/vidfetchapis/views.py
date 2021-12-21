@@ -58,6 +58,9 @@ class FetchVidData(APIView):
             status=status.HTTP_200_OK,
         )
 
+    # async def __call__(self, *args: Any, **kwds: Any) -> Any:
+    #     return super().__call__(*args, **kwds)
+
 
 class GetStoredData(APIView):
     pagination_class = CustomPagination
