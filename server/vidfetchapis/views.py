@@ -48,15 +48,17 @@ class FetchVidData(APIView):
         """
 
         print("Fetching Video Data API")
-        # vid_data = fetch_vid_data(request, **kwargs)
-        # return vid_data
 
-        asyncio.run(main())
+        vid_data = fetch_vid_data(request, **kwargs)
 
-        return response.JsonResponse(
-            {"success_status": True},
-            status=status.HTTP_200_OK,
-        )
+        return vid_data
+
+        # asyncio.run(main())
+
+        # return response.JsonResponse(
+        #     {"success_status": True},
+        #     status=status.HTTP_200_OK,
+        # )
 
     # async def __call__(self, *args: Any, **kwds: Any) -> Any:
     #     return super().__call__(*args, **kwds)

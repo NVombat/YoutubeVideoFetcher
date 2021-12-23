@@ -31,12 +31,16 @@ class VideoFetchData:
         Returns:
             None
         """
-        if value := self.db.find_one({search_query: {"$exists": 1}}):
-            print("SEARCH QUERY EXISTS - UPDATE ENTRY")
-            value.update(video_data)
+        if self.db.find_one({search_query: {"$exists": 1}}):
+            self.db.find_one_and_update(
+                {search_query: {"$exists": 1}}, {"$push": {search_query: video_data}}
+            )
+
         else:
-            print("SEARCH QUERY DOES NOT EXIST - CREATE NEW ENTRY")
-            self.db.insert_one(video_data)
+            data_list = []
+            data_list.append(video_data)
+            data = {search_query: data_list}
+            self.db.insert_one(data)
 
     def fetch_user_data(self, search_query: str) -> response.JsonResponse:
         """Fetches specific data from db based on keyword (query)
