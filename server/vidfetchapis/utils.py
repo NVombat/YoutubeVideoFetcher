@@ -8,8 +8,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
-from server.vidfetchapis.errors import KeywordNotFoundError
-
+from .errors import KeywordNotFoundError
 from . import Fetched_Data
 
 load_dotenv()
@@ -52,11 +51,8 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
             q=search_query,
         )
 
-        storage_dict = {}
-
-        response = request.execute()
-        res_data = response["items"]
-        print(res_data)
+        res = request.execute()
+        res_data = res["items"]
 
         video_data = {}
 
@@ -90,9 +86,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
             video_data[publish_date] = data
 
         search_query = search_query.upper()
-        storage_dict[search_query] = video_data
-
-        Fetched_Data.insert_data(search_query, storage_dict)
+        Fetched_Data.insert_data(search_query, video_data)
 
         youtube_service.close()
 
@@ -128,21 +122,21 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
         search_query = request.query_params.get("Query")
         print(search_query)
 
-        search_query = search_query.upper()
-        data = Fetched_Data.fetch_user_data(search_query)
+        searchquery = search_query.upper()
+        data = Fetched_Data.fetch_user_data(searchquery)
 
         return data
 
-    except KeywordNotFoundError as knf:
+    except KeywordNotFoundError:
         api_url = "http://127.0.0.1:8000/api/fetchvids"
         client = requests.Session()
-        payload = {"Query": "Soccer", "Weeks": 10}
+        payload = {"Query": search_query, "Weeks": 10}
         client.get(url=api_url, params=payload)
 
-        return response.JsonResponse(
-            {"error": str(knf), "success_status": False},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        get_data_url = "http://127.0.0.1:8000/api/getdata"
+        params = {"Query": search_query}
+        client.get(url=get_data_url, params=params)
+
     except Exception as e:
         print(e)
         return response.JsonResponse(
