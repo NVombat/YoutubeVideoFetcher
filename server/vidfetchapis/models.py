@@ -33,18 +33,13 @@ class VideoFetchData:
         """
         if self.db.find_one({search_query: {"$exists": 1}}):
             self.db.find_one_and_update(
-                {search_query: {"$exists": 1}},
-                {
-                    "$push": {search_query: video_data}
-                }
+                {search_query: {"$exists": 1}}, {"$push": {search_query: video_data}}
             )
 
         else:
             data_list = []
             data_list.append(video_data)
-            data = {
-                search_query: data_list
-            }
+            data = {search_query: data_list}
             self.db.insert_one(data)
 
     def fetch_user_data(self, search_query: str) -> response.JsonResponse:
