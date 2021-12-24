@@ -1,9 +1,11 @@
 # RESOURCE - https://github.com/googleapis/google-api-python-client -> DOCS
 
+from celery.utils.log import get_task_logger
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 from rest_framework import status
 from django.http import response
+from celery import shared_task
 from dotenv import load_dotenv
 import requests
 import os
@@ -11,9 +13,11 @@ import os
 from .errors import KeywordNotFoundError
 from . import Fetched_Data
 
+logger = get_task_logger(__name__)
 load_dotenv()
 
 
+@shared_task
 def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
     """
     Fetches video data using the YouTube API when hit with GET requests
@@ -26,14 +30,17 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
         response.JsonResponse
     """
     try:
-        print("GET REQUEST")
-        print("Request Object DATA:", request.data)
+        # print("GET REQUEST")
+        # print("Request Object DATA:", request.data)
 
-        search_query = request.query_params.get("Query")
-        weeks = request.query_params.get("Weeks")
-        weeks = int(weeks)
+        # search_query = request.query_params.get("Query")
+        # weeks = request.query_params.get("Weeks")
+        # weeks = int(weeks)
+        # logger.info("Successfully Got Request Info")
+        # print(search_query, weeks)
 
-        print(search_query, weeks)
+        search_query = "Driving"
+        weeks = 10
 
         youtube_service = build("youtube", "v3", developerKey=os.getenv("API_KEY"))
 
@@ -53,6 +60,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
         res = request.execute()
         res_data = res["items"]
+        logger.info("Successfully Fetched Data")
 
         video_data = {}
 
@@ -87,8 +95,10 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
         search_query = search_query.upper()
         Fetched_Data.insert_data(search_query, video_data)
+        logger.info("Successfully Stored Data from API")
 
         youtube_service.close()
+        logger.info("Successfully Completed Process using API")
 
         return response.JsonResponse(
             {"success_status": True},
@@ -97,6 +107,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
     except Exception as e:
         print(e)
+        logger.info("Error in Fetching Data from API")
         return response.JsonResponse(
             {"error": "Error Occured While Fetching Data", "success_status": False},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
