@@ -16,9 +16,34 @@ from . import Fetched_Data
 logger = get_task_logger(__name__)
 load_dotenv()
 
+curr_key = 0
+api_keys = os.getenv("API_KEY").split(" ")
+print(api_keys)
+youtube_service = build("youtube", "v3", developerKey=api_keys[0])
+
+
+def switch_api_keys():
+    global curr_key
+
+    num_of_keys = len(api_keys)
+
+    if num_of_keys == 1:
+        logger.info("No More API Keys, Only 1 API Key Was Available")
+        return
+
+    if num_of_keys - 1 > curr_key:
+        curr_key = curr_key + 1
+    elif num_of_keys - 1 == curr_key:
+        logger.info("No More API Keys, All Keys Provided Have Been Used")
+        return
+
+    global youtube_service
+    youtube_service = build("youtube", "v3", developerKey=api_keys[curr_key])
+    logger.info("Swicthed API Keys If Feasable")
+
 
 @shared_task
-def fetch_vid_data(request = None, *args, **kwargs) -> bool:
+def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
 
@@ -47,14 +72,9 @@ def fetch_vid_data(request = None, *args, **kwargs) -> bool:
             weeks = args[1]
             logger.info("Successfully HardCoded Search Information")
 
-        youtube_service = build("youtube", "v3", developerKey=os.getenv("API_KEY"))
-
-        logger.info("Successfully Connected to YouTube via API")
-
         # From Which Date Are Results Wanted
         from_date = datetime.utcnow() - timedelta(weeks=weeks)
         vid_date = from_date.replace(microsecond=0).isoformat("T") + "Z"
-
         print(vid_date)
 
         request = youtube_service.search().list(
@@ -64,8 +84,15 @@ def fetch_vid_data(request = None, *args, **kwargs) -> bool:
             publishedAfter=vid_date,
             q=search_query,
         )
+        try:
+            res = request.execute()
+            logger.info("Successfully Connected to YouTube via API")
 
-        res = request.execute()
+        except Exception:
+            logger.info("Error while Connecting to API")
+            switch_api_keys()
+            return
+
         res_data = res["items"]
         logger.info("Successfully Fetched Data from Request")
 
