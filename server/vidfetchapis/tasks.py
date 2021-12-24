@@ -16,6 +16,7 @@ from . import Fetched_Data
 logger = get_task_logger(__name__)
 load_dotenv()
 
+
 @shared_task
 def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
     """
