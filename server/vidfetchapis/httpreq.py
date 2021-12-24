@@ -1,8 +1,6 @@
 # https://developers.google.com/youtube/v3/sample_requests
 
 from datetime import datetime, timedelta
-from rest_framework import status
-from django.http import response
 from dotenv import load_dotenv
 import requests
 import os
@@ -10,12 +8,12 @@ import os
 load_dotenv()
 
 
-def test_request() -> str:
+def http_request() -> int:
     """
-    Test Request
+    Builds a url & sends an HTTP GET request with parameters
 
     Returns:
-        str
+        int
     """
     key = os.getenv("API_KEY")
 
@@ -30,7 +28,7 @@ def test_request() -> str:
     vid_date = from_date.replace(microsecond=0).isoformat("T") + "Z"
     publishedAfter = vid_date
 
-    # client = requests.Session()
+    client = requests.Session()
 
     base_url = "https://www.googleapis.com/youtube/v3/search"
     url = (
@@ -49,10 +47,8 @@ def test_request() -> str:
         + publishedAfter
     )
 
-    return url
-
-    # response = client.get(url=url)
-    # content = response.content.decode()
-    # content.replace("\n", "")
-    # print(content)
-    # print(response.status_code)
+    res = client.get(url=url)
+    content = res.content.decode()
+    content.replace("\n", "")
+    print(content)
+    return res.status_code

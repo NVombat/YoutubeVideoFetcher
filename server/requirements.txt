@@ -11,3 +11,5 @@ google-api-python-client==2.33.0
 uvicorn==0.13.4
 httpx==0.18.1
 asyncio==3.4.3
+celery==5.2.1
+redis==4.0.2
