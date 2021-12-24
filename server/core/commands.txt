@@ -1,0 +1,26 @@
+Redis Commands:
+
+redis-server
+redis-cli ping
+redis-cli shutdown
+
+ps aux | grep redis
+sudo kill -9 _pid_
+
+sudo service redis-server stop
+sudo service redis-server restart
+sudo service redis-server status
+
+Celery Commands:
+
+cd server
+celery -A core worker -l info
+
+cd server
+celery -A core beat -l info -s /home/nvombat/Desktop/YoutubeVideoFetcher/server/celerybeatschedule
+
+
+STEPS:
+- Run Redis Server
+- Run Django App
+- Run Celery Commands in Different Terminals

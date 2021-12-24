@@ -18,31 +18,38 @@ load_dotenv()
 
 
 @shared_task
-def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
+def fetch_vid_data(request = None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
 
     Args:
         request
+        *args
         **kwargs
 
     Returns:
         response.JsonResponse
     """
     try:
-        # print("GET REQUEST")
-        # print("Request Object DATA:", request.data)
+        if request:
+            print("GET REQUEST")
+            print("Request Object DATA:", request.query_params)
 
-        # search_query = request.query_params.get("Query")
-        # weeks = request.query_params.get("Weeks")
-        # weeks = int(weeks)
-        # logger.info("Successfully Got Request Info")
-        # print(search_query, weeks)
+            search_query = request.query_params.get("Query")
+            weeks = request.query_params.get("Weeks")
+            weeks = int(weeks)
+            print(search_query, weeks)
 
-        search_query = "Driving"
-        weeks = 10
+            logger.info("Successfully Retrieved Request Information")
+
+        else:
+            search_query = args[0]
+            weeks = args[1]
+            logger.info("Successfully HardCoded Search Information")
 
         youtube_service = build("youtube", "v3", developerKey=os.getenv("API_KEY"))
+
+        logger.info("Successfully Connected to YouTube via API")
 
         # From Which Date Are Results Wanted
         from_date = datetime.utcnow() - timedelta(weeks=weeks)
@@ -60,7 +67,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
         res = request.execute()
         res_data = res["items"]
-        logger.info("Successfully Fetched Data")
+        logger.info("Successfully Fetched Data from Request")
 
         video_data = {}
 
@@ -93,6 +100,7 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
 
             video_data[publish_date] = data
 
+        logger.info("Successfully Created Data to be Stored")
         search_query = search_query.upper()
         Fetched_Data.insert_data(search_query, video_data)
         logger.info("Successfully Stored Data from API")
@@ -100,18 +108,12 @@ def fetch_vid_data(request, **kwargs) -> response.JsonResponse:
         youtube_service.close()
         logger.info("Successfully Completed Process using API")
 
-        return response.JsonResponse(
-            {"success_status": True},
-            status=status.HTTP_200_OK,
-        )
+        return True
 
     except Exception as e:
         print(e)
         logger.info("Error in Fetching Data from API")
-        return response.JsonResponse(
-            {"error": "Error Occured While Fetching Data", "success_status": False},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        return False
 
 
 def get_paginated_data(request, **kwargs) -> response.JsonResponse:
