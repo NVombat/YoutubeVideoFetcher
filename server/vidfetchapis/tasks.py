@@ -22,7 +22,15 @@ print(api_keys)
 youtube_service = build("youtube", "v3", developerKey=api_keys[0])
 
 
-def switch_api_keys():
+def switch_api_keys() -> None:
+    """
+    If provided with more than 1 API Keys, when 1 Key
+    is exhausted, switches to the other keys till all
+    keys are exhausted
+
+    Returns:
+        None
+    """
     global curr_key
 
     num_of_keys = len(api_keys)
@@ -46,14 +54,15 @@ def switch_api_keys():
 def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
+    Also a shared task run every 45 seconds with hardcoded data
 
     Args:
-        request
+        request=None (Default)
         *args
         **kwargs
 
     Returns:
-        response.JsonResponse
+        bool
     """
     try:
         if request:
