@@ -9,8 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-from datetime import timedelta
 from dotenv import load_dotenv
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -100,7 +100,7 @@ CELERY_BEAT_SCHEDULE = {
     "fetch_vid_data": {
         "task": "vidfetchapis.tasks.fetch_vid_data",
         "schedule": timedelta(seconds=45),
-        "args": ["Driving", 10],
+        "args": ["Driving", 52],
     },
 }
 

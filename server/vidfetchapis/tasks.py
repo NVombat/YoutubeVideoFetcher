@@ -39,13 +39,15 @@ def switch_api_keys() -> None:
         logger.info("No More API Keys, Only 1 API Key Was Available")
         return
 
+    global youtube_service
+
+    # Use keys one after another
     if num_of_keys - 1 > curr_key:
         curr_key = curr_key + 1
+    # When all keys are used go back to first key
     elif num_of_keys - 1 == curr_key:
-        logger.info("No More API Keys, All Keys Provided Have Been Used")
-        return
+        curr_key = 0
 
-    global youtube_service
     youtube_service = build("youtube", "v3", developerKey=api_keys[curr_key])
     logger.info("Swicthed API Keys If Feasable")
 
@@ -86,7 +88,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         vid_date = from_date.replace(microsecond=0).isoformat("T") + "Z"
         print(vid_date)
 
-        request = youtube_service.search().list(
+        req = youtube_service.search().list(
             part="snippet",
             order="date",
             type="video",
@@ -94,7 +96,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             q=search_query,
         )
         try:
-            res = request.execute()
+            res = req.execute()
             logger.info("Successfully Connected to YouTube via API")
 
         except Exception:
