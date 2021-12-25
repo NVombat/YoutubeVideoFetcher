@@ -182,7 +182,7 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
     """
     try:
         print("GET REQUEST")
-        print("Request Object DATA:", request.data)
+        print("Request Object DATA:", request.query_params)
 
         search_query = request.query_params.get("Query")
         print(search_query)

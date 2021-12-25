@@ -5,8 +5,6 @@ from django.http import response
 
 from .tasks import fetch_vid_data, get_paginated_data
 from core.pagination import CustomPagination
-from . import Custom_Pagination
-
 
 class FetchVidData(APIView):
     permission_classes = (AllowAny,)
@@ -58,4 +56,4 @@ class GetStoredData(APIView):
 
         db_data = get_paginated_data(request, **kwargs)
 
-        return Custom_Pagination.get_paginated_response(db_data)
+        return db_data
