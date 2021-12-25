@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
+from .utils import convert_data_to_storable_format
 from .errors import KeywordNotFoundError
 from . import Fetched_Data
 
@@ -56,7 +57,7 @@ def switch_api_keys() -> None:
 def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
-    Also a shared task run every 45 seconds with hardcoded data
+    Also a shared task runs every 45 seconds with hardcoded data
 
     Args:
         request=None (Default)
@@ -104,39 +105,9 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             switch_api_keys()
             return
 
-        res_data = res["items"]
         logger.info("Successfully Fetched Data from Request")
 
-        video_data = {}
-
-        for items in res_data:
-            vid_data = items["snippet"]
-
-            publish_date = vid_data["publishedAt"]
-            title = vid_data["title"]
-            description = vid_data["description"]
-            channel = vid_data["channelTitle"]
-
-            thumbnail_data = vid_data["thumbnails"]
-            default_thumbnail = thumbnail_data["default"]
-            default_url = default_thumbnail["url"]
-            medium_thumbnail = thumbnail_data["medium"]
-            medium_url = medium_thumbnail["url"]
-            high_thumbnail = thumbnail_data["high"]
-            high_url = high_thumbnail["url"]
-
-            thumbnail_urls = {}
-            thumbnail_urls["default"] = default_url
-            thumbnail_urls["medium"] = medium_url
-            thumbnail_urls["high"] = high_url
-
-            data = {}
-            data["title"] = title
-            data["description"] = description
-            data["channel"] = channel
-            data["thumbnail_urls"] = thumbnail_urls
-
-            video_data[publish_date] = data
+        video_data = convert_data_to_storable_format(res)
 
         logger.info("Successfully Created Data to be Stored")
         search_query = search_query.upper()
