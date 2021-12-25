@@ -1,5 +1,9 @@
-from core.errorfactory import DatabaseSearchErrors
+from core.errorfactory import DatabaseSearchErrors, PaginationErrors
 
 
 class KeywordNotFoundError(DatabaseSearchErrors):
+    ...
+
+
+class PageNotFoundError(PaginationErrors):
     ...

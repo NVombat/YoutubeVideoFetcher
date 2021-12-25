@@ -51,16 +51,17 @@ class VideoFetchData:
         Returns:
             response.JsonResponse
         """
-        if data := self.db.find(
-            {search_query: {"$exists": 1}},
+        if data := self.db.find_one(
+            {
+                search_query: {"$exists": 1},
+            },
             {
                 "_id": 0,
             },
+            sort=[("publish_date", -1)],
         ):
-            data.sort("publish_date", -1)
-            docs = list(data)
-            json_data = response.JsonResponse(docs, safe=False)
-            return json_data
+            docs = data[search_query]
+            return docs
 
         raise KeywordNotFoundError(
             f"Data For {search_query} Not Found In Database - Fetching Results For {search_query}. Please Try Again In A Moment"
