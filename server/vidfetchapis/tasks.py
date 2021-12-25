@@ -48,9 +48,49 @@ def switch_api_keys() -> None:
     # When all keys are used go back to first key
     elif num_of_keys - 1 == curr_key:
         curr_key = 0
+        logger.info("Used Each API Key - Moving Back To First API Key")
 
     youtube_service = build("youtube", "v3", developerKey=api_keys[curr_key])
     logger.info("Swicthed API Keys If Feasable")
+
+
+def get_next_page_data(req, res: dict, query: str) -> None:
+    """
+    Recursive Function To Fetch Data From The Pages Following
+    The First Page Till No Pages Remain
+
+    Args:
+        req: Previous Request
+        res: Previous Response
+
+    Returns:
+        None (Else Recursive)
+    """
+    next_page_req = youtube_service.search().list_next(req, res)
+
+    try:
+        next_page_res = next_page_req.execute()
+        logger.info("Successfully Connected to YouTube via API")
+    except Exception:
+        logger.info("Error while Connecting to API")
+        switch_api_keys()
+        return
+
+    logger.info("Successfully connected to YouTube Via API - Fetching Next Page Data")
+
+    if next_page_res == None:
+        logger.info(f"Next Page Doesnt Exist - No More Data For {query}")
+        return
+    else:
+        video_data = convert_data_to_storable_format(next_page_res)
+        logger.info("Successfully Created Data to be Stored")
+        Fetched_Data.insert_data(query, video_data)
+        logger.info("Successfully Stored Data from API")
+
+        prev_req = next_page_req
+        prev_res = next_page_res
+
+        get_next_page_data(prev_req, prev_res)
 
 
 @shared_task
@@ -113,6 +153,9 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         search_query = search_query.upper()
         Fetched_Data.insert_data(search_query, video_data)
         logger.info("Successfully Stored Data from API")
+
+        logger.info("Fetching Next Page Data")
+        get_next_page_data(req, res, search_query)
 
         youtube_service.close()
         logger.info("Successfully Completed Process using API")
