@@ -66,7 +66,7 @@ $ celery -A core worker -l info
 In the other window run celery beat so the task scheduler is ready for action
 
 ```
-celery -A core beat -l info -s /path/to/file
+$ celery -A core beat -l info -s /path/to/file
 ```
 
 Celery & Redis Have been used to create and run the task of fetching video data from the YouTube API repeatedly after a certain time interval

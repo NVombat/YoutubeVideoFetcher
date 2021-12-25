@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
+from .utils import convert_data_to_storable_format
 from .errors import KeywordNotFoundError
 from . import Fetched_Data
 
@@ -39,22 +40,64 @@ def switch_api_keys() -> None:
         logger.info("No More API Keys, Only 1 API Key Was Available")
         return
 
+    global youtube_service
+
+    # Use keys one after another
     if num_of_keys - 1 > curr_key:
         curr_key = curr_key + 1
+    # When all keys are used go back to first key
     elif num_of_keys - 1 == curr_key:
-        logger.info("No More API Keys, All Keys Provided Have Been Used")
-        return
+        curr_key = 0
+        logger.info("Used Each API Key - Moving Back To First API Key")
 
-    global youtube_service
     youtube_service = build("youtube", "v3", developerKey=api_keys[curr_key])
     logger.info("Swicthed API Keys If Feasable")
+
+
+def get_next_page_data(req, res: dict, query: str) -> None:
+    """
+    Recursive Function To Fetch Data From The Pages Following
+    The First Page Till No Pages Remain
+
+    Args:
+        req: Previous Request
+        res: Previous Response
+
+    Returns:
+        None (Else Recursive)
+    """
+    next_page_req = youtube_service.search().list_next(req, res)
+
+    try:
+        next_page_res = next_page_req.execute()
+        logger.info("Successfully Connected to YouTube via API")
+    except Exception:
+        logger.info("Error while Connecting to API")
+        switch_api_keys()
+        return
+
+    logger.info("Successfully connected to YouTube Via API - Fetching Next Page Data")
+
+    if next_page_res == None:
+        logger.info(f"Next Page Doesnt Exist - No More Data For {query}")
+        return
+    else:
+        video_data = convert_data_to_storable_format(next_page_res)
+        logger.info("Successfully Created Data to be Stored")
+        Fetched_Data.insert_data(query, video_data)
+        logger.info("Successfully Stored Data from API")
+
+        prev_req = next_page_req
+        prev_res = next_page_res
+
+        get_next_page_data(prev_req, prev_res)
 
 
 @shared_task
 def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
-    Also a shared task run every 45 seconds with hardcoded data
+    Also a shared task runs every 45 seconds with hardcoded data
 
     Args:
         request=None (Default)
@@ -86,7 +129,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         vid_date = from_date.replace(microsecond=0).isoformat("T") + "Z"
         print(vid_date)
 
-        request = youtube_service.search().list(
+        req = youtube_service.search().list(
             part="snippet",
             order="date",
             type="video",
@@ -94,7 +137,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             q=search_query,
         )
         try:
-            res = request.execute()
+            res = req.execute()
             logger.info("Successfully Connected to YouTube via API")
 
         except Exception:
@@ -102,44 +145,17 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             switch_api_keys()
             return
 
-        res_data = res["items"]
         logger.info("Successfully Fetched Data from Request")
 
-        video_data = {}
-
-        for items in res_data:
-            vid_data = items["snippet"]
-
-            publish_date = vid_data["publishedAt"]
-            title = vid_data["title"]
-            description = vid_data["description"]
-            channel = vid_data["channelTitle"]
-
-            thumbnail_data = vid_data["thumbnails"]
-            default_thumbnail = thumbnail_data["default"]
-            default_url = default_thumbnail["url"]
-            medium_thumbnail = thumbnail_data["medium"]
-            medium_url = medium_thumbnail["url"]
-            high_thumbnail = thumbnail_data["high"]
-            high_url = high_thumbnail["url"]
-
-            thumbnail_urls = {}
-            thumbnail_urls["default"] = default_url
-            thumbnail_urls["medium"] = medium_url
-            thumbnail_urls["high"] = high_url
-
-            data = {}
-            data["title"] = title
-            data["description"] = description
-            data["channel"] = channel
-            data["thumbnail_urls"] = thumbnail_urls
-
-            video_data[publish_date] = data
+        video_data = convert_data_to_storable_format(res)
 
         logger.info("Successfully Created Data to be Stored")
         search_query = search_query.upper()
         Fetched_Data.insert_data(search_query, video_data)
         logger.info("Successfully Stored Data from API")
+
+        logger.info("Fetching Next Page Data")
+        get_next_page_data(req, res, search_query)
 
         youtube_service.close()
         logger.info("Successfully Completed Process using API")
