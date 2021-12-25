@@ -7,14 +7,16 @@ from rest_framework import status
 from django.http import response
 from celery import shared_task
 from dotenv import load_dotenv
+from math import ceil
 import requests
 import os
 
+from .errors import KeywordNotFoundError, PageNotFoundError
 from .utils import convert_data_to_storable_format
-from .errors import KeywordNotFoundError
 from . import Fetched_Data
 
 logger = get_task_logger(__name__)
+ITEMS_PER_PAGE = 2
 load_dotenv()
 
 curr_key = 0
@@ -90,7 +92,8 @@ def get_next_page_data(req, res: dict, query: str) -> None:
         prev_req = next_page_req
         prev_res = next_page_res
 
-        get_next_page_data(prev_req, prev_res)
+        print("GOING TO NEXT PAGE")
+        get_next_page_data(prev_req, prev_res, query)
 
 
 @shared_task
@@ -182,15 +185,42 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
     """
     try:
         print("GET REQUEST")
-        print("Request Object DATA:", request.data)
+        print("Request Object DATA:", request.query_params)
 
+        page = int(request.query_params.get("Page"))
         search_query = request.query_params.get("Query")
-        print(search_query)
+        print(page, search_query)
 
         searchquery = search_query.upper()
         data = Fetched_Data.fetch_user_data(searchquery)
 
-        return data
+        total_docs = len(data)
+        print(len(data))
+
+        if page <= 0 or page > ceil(total_docs / ITEMS_PER_PAGE):
+            raise PageNotFoundError("This Page Does Not Exist")
+
+        left_lim = (page - 1) * ITEMS_PER_PAGE
+        right_lim = left_lim + 2
+        print(left_lim, right_lim)
+
+        if total_docs != 0:
+            return response.JsonResponse(
+                {
+                    "currentPage": page,
+                    "hasNextPage": ITEMS_PER_PAGE * page < total_docs,
+                    "hasPreviousPage": page > 1,
+                    "nextPage": page + 1,
+                    "previousPage": page - 1,
+                    "lastPage": ceil(total_docs / ITEMS_PER_PAGE),
+                    "data": data[left_lim:right_lim],
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            raise KeywordNotFoundError(
+                f"Data For {search_query} Not Found In Database - Fetching Results For {search_query}. Please Try Again In A Moment"
+            )
 
     except KeywordNotFoundError:
         api_url = "http://127.0.0.1:8000/api/fetchvids"
@@ -201,6 +231,12 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
         get_data_url = "http://127.0.0.1:8000/api/getdata"
         params = {"Query": search_query}
         client.get(url=get_data_url, params=params)
+
+    except PageNotFoundError as pnfe:
+        return response.JsonResponse(
+            {"error": str(pnfe), "success_status": False},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     except Exception as e:
         print(e)
