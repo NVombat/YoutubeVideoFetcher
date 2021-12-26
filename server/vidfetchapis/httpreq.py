@@ -50,5 +50,4 @@ def http_request() -> int:
     res = client.get(url=url)
     content = res.content.decode()
     content.replace("\n", "")
-    print(content)
     return res.status_code

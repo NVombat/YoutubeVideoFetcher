@@ -11,7 +11,7 @@
 2. Python installed (If not download it [here](https://www.python.org/downloads/)).
 3. Any text editor of your choice.
 
-## Installation 🔧
+## 🔧 Installation
 
 ### Server
 
@@ -81,3 +81,5 @@ $ http://127.0.0.1:8000/api/getdata - GET request
  - The first URL uses the YouTube API to fetch video data, and then stores it in the database
  - The second URL queries the database based on the parameters passed in the request to return a paginated response of the result of the request sent to the first URL
  - If the results for a query are not in the database, a request is made using the YouTube API and the results are fetched at that moment (Dynamic Searching)
+
+### NOTE: THE API IS USED TO FETCH DATA FROM ALL EXISTING PAGES USING THE list() & list_next() FUNCTIONS.
