@@ -21,7 +21,6 @@ load_dotenv()
 
 curr_key = 0
 api_keys = os.getenv("API_KEY").split(" ")
-print(api_keys)
 youtube_service = build("youtube", "v3", developerKey=api_keys[0])
 
 
@@ -50,7 +49,7 @@ def switch_api_keys() -> None:
     # When all keys are used go back to first key
     elif num_of_keys - 1 == curr_key:
         curr_key = 0
-        logger.info("Used Each API Key - Moving Back To First API Key")
+        logger.info("Used All API Keys - Moving Back To First API Key")
 
     youtube_service = build("youtube", "v3", developerKey=api_keys[curr_key])
     logger.info("Swicthed API Keys If Feasable")
@@ -78,10 +77,10 @@ def get_next_page_data(req, res: dict, query: str) -> None:
         switch_api_keys()
         return
 
-    logger.info("Successfully connected to YouTube Via API - Fetching Next Page Data")
+    logger.info("Fetching Next Page Data")
 
     if next_page_res == None:
-        logger.info(f"Next Page Doesnt Exist - No More Data For {query}")
+        logger.info(f"Next Page Does Not Exist - No More Data For {query}")
         return
     else:
         video_data = convert_data_to_storable_format(next_page_res)
@@ -92,7 +91,7 @@ def get_next_page_data(req, res: dict, query: str) -> None:
         prev_req = next_page_req
         prev_res = next_page_res
 
-        print("GOING TO NEXT PAGE")
+        logger.info("Moving On To Next Page")
         get_next_page_data(prev_req, prev_res, query)
 
 
@@ -100,7 +99,7 @@ def get_next_page_data(req, res: dict, query: str) -> None:
 def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     Fetches video data using the YouTube API when hit with GET requests
-    Also a shared task runs every 45 seconds with hardcoded data
+    Also a shared task which runs every 45 seconds with hardcoded data
 
     Args:
         request=None (Default)
@@ -130,7 +129,6 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         # From Which Date Are Results Wanted
         from_date = datetime.utcnow() - timedelta(weeks=weeks)
         vid_date = from_date.replace(microsecond=0).isoformat("T") + "Z"
-        print(vid_date)
 
         req = youtube_service.search().list(
             part="snippet",
@@ -151,7 +149,6 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         logger.info("Successfully Fetched Data from Request")
 
         video_data = convert_data_to_storable_format(res)
-
         logger.info("Successfully Created Data to be Stored")
         search_query = search_query.upper()
         Fetched_Data.insert_data(search_query, video_data)
@@ -197,8 +194,12 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
         total_docs = len(data)
         print(len(data))
 
+        # If Page Number Does Not Exist
         if page <= 0 or page > ceil(total_docs / ITEMS_PER_PAGE):
             raise PageNotFoundError("This Page Does Not Exist")
+        # If No Page Is Specified
+        elif page == None:
+            page = 1
 
         left_lim = (page - 1) * ITEMS_PER_PAGE
         right_lim = left_lim + 2
