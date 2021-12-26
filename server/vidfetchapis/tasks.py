@@ -110,7 +110,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
         bool
     """
     try:
-        if request:
+        if request != None:
             print("GET REQUEST")
             print("Request Object DATA:", request.query_params)
 
@@ -122,8 +122,8 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             logger.info("Successfully Retrieved Request Information")
 
         else:
-            search_query = args[0]
-            weeks = args[1]
+            search_query = "Driving"
+            weeks = 5
             logger.info("Successfully HardCoded Search Information")
 
         # From Which Date Are Results Wanted
@@ -142,6 +142,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             logger.info("Successfully Connected to YouTube via API")
 
         except Exception:
+            print("API KEY INVALID - SWITCHING KEYS")
             logger.info("Error while Connecting to API")
             switch_api_keys()
             return

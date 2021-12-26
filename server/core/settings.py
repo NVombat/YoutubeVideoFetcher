@@ -100,7 +100,6 @@ CELERY_BEAT_SCHEDULE = {
     "fetch_vid_data": {
         "task": "vidfetchapis.tasks.fetch_vid_data",
         "schedule": timedelta(seconds=45),
-        "args": ["Driving", 52],
     },
 }
 
