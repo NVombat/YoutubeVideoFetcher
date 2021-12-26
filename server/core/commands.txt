@@ -17,7 +17,7 @@ cd server
 celery -A core worker -l info
 
 cd server
-celery -A core beat -l info -s /home/nvombat/Desktop/YoutubeVideoFetcher/server/celerybeatschedule
+celery -A core beat -l info -s /home/nvombat/Desktop/YoutubeVideoFetcher/server/celeryfiles/celerybeatschedule
 
 
 STEPS:
