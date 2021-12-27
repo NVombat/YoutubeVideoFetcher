@@ -1,60 +1,56 @@
-# PAGINATION DONE INTERNALLY IN TASKS.PY
+from rest_framework import status
+from django.http import response
+from math import ceil
 
-from rest_framework.response import Response
-from rest_framework import pagination
-from collections import OrderedDict
+from vidfetchapis.errors import (
+    KeywordNotFoundError,
+    PageNotFoundError,
+)
+
+ITEMS_PER_PAGE = 2
 
 
-class CustomPagination(pagination.PageNumberPagination):
-    """
-    Define Custom Pagination Characteristics
-    """
-
-    page_size = 5
-    page_size_query_param = "page_size"
-    max_page_size = 20
-    page_query_param = "page"
-
-    def get_paginated_response(self, data) -> Response:
+class CustomPagination:
+    def get_paginated_data(
+        self, page: int, data: list, search_query: str
+    ) -> response.JsonResponse:
         """
-        Returns a paginated response with meta data related
-        to the pagination
+        Paginates Data & Adds Page Related Meta Data
 
         Args:
-            data = Data to be returned
+            page: Page Number
+            data: Data To Be Paginated
+            search_query: Search Query
 
         Returns:
-            Response
+            response.JsonResponse
         """
-        next = None
-        previous = None
+        total_docs = len(data)
 
-        if self.page.has_next():
-            next = self.page.next_page_number()
-        if self.page.has_previous():
-            previous = self.page.previous_page_number()
+        # If Page Number Does Not Exist
+        if page <= 0 or page > ceil(total_docs / ITEMS_PER_PAGE):
+            raise PageNotFoundError("This Page Does Not Exist")
+        # If No Page Is Specified
+        elif page == None:
+            page = 1
 
-        return Response(
-            {
-                "results": data,
-                "meta": {
-                    "pagination": OrderedDict(
-                        [
-                            ("page", self.page.number),
-                            ("pages", self.page.paginator.num_pages),
-                            ("count", self.page.paginator.count),
-                        ]
-                    )
+        left_lim = (page - 1) * ITEMS_PER_PAGE
+        right_lim = left_lim + ITEMS_PER_PAGE
+
+        if total_docs != 0:
+            return response.JsonResponse(
+                {
+                    "currentPage": page,
+                    "hasNextPage": ITEMS_PER_PAGE * page < total_docs,
+                    "hasPreviousPage": page > 1,
+                    "nextPage": page + 1,
+                    "previousPage": page - 1,
+                    "lastPage": ceil(total_docs / ITEMS_PER_PAGE),
+                    "data": data[left_lim:right_lim],
                 },
-                "links": OrderedDict(
-                    [
-                        ("first", self.build_link(1)),
-                        ("last", self.build_link(self.page.paginator.num_pages)),
-                        ("next", self.build_link(next)),
-                        ("prev", self.build_link(previous)),
-                    ]
-                ),
-            }
-        )
-        # response['next'] = self.get_next_link()
-        # response['previous'] = self.get_previous_link()
+                status=status.HTTP_200_OK,
+            )
+        else:
+            raise KeywordNotFoundError(
+                f"Data For {search_query} Not Found In Database - Fetching Results For {search_query}. Please Try Again In A Moment"
+            )
