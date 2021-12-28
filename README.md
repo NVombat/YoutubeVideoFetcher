@@ -11,18 +11,29 @@
 2. Python installed (If not download it [here](https://www.python.org/downloads/)).
 3. Any text editor of your choice.
 
+## 🎉 Setup
+
+### Clone The Repository :
+
+```
+git clone https://github.com/NVombatYoutubeVideoFetcher.git
+cd server
+```
+
+### .env File & Project Config :
+
+1. Setup the .env file for MongoDB, Django & Google YouTube API functionality based on the .env.example file
+2. For the YouTube API, First set up a project on Google Console, then generate API Keys
+
 ## 🔧 Installation
 
-### Server
+### Server :
 
-Install python dependencies
+Install python dependencies using [pip](https://pip.pypa.io/en/stable/)
 
 ```
 $ pip install -r server/requirements.txt
 ```
-
-Setup the .env file for Database & Google YouTube API functionality
-NOTE: For the YouTube API, First you will need to set up a project in your Google Console and then get API Keys
 
 Start the Django server
 
@@ -30,7 +41,7 @@ Start the Django server
 $ python3 manage.py runserver
 ```
 
-### Redis
+### Redis :
 
 First stop any pre-running Redis Server, then restart the Redis Server & check its status
 
@@ -49,7 +60,7 @@ $ redis-cli ping -> SHOULD RESPOND WITH PONG
 
 Redis Server is now running in the background
 
-### Celery
+### Celery :
 
 Open two new terminal windows and go to the "server" directory
 
@@ -82,4 +93,4 @@ $ http://127.0.0.1:8000/api/getdata - GET request
  - The second URL queries the database based on the parameters passed in the request to return a paginated response of the result of the request sent to the first URL
  - If the results for a query are not in the database, a request is made using the YouTube API and the results are fetched at that moment (Dynamic Searching)
 
-### NOTE: THE API IS USED TO FETCH DATA FROM ALL EXISTING PAGES USING THE list() & list_next() FUNCTIONS.
+### NOTE : THE API IS USED TO FETCH DATA FROM ALL EXISTING PAGES USING THE list() & list_next() FUNCTIONS.
