@@ -110,13 +110,9 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
     """
     try:
         if request != None:
-            print("GET REQUEST")
-            print("Request Object DATA:", request.query_params)
-
             search_query = request.query_params.get("Query")
             weeks = request.query_params.get("Weeks")
             weeks = int(weeks)
-            print(search_query, weeks)
 
             logger.info("Successfully Retrieved Request Information")
 
@@ -141,7 +137,6 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
             logger.info("Successfully Connected to YouTube via API")
 
         except Exception:
-            print("API KEY INVALID - SWITCHING KEYS")
             logger.info("Error while Connecting to API")
             switch_api_keys()
             return
@@ -162,8 +157,7 @@ def fetch_vid_data(request=None, *args, **kwargs) -> bool:
 
         return True
 
-    except Exception as e:
-        print(e)
+    except Exception:
         logger.info("Error in Fetching Data from API")
         return False
 
@@ -181,12 +175,8 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
         response.JsonResponse
     """
     try:
-        print("GET REQUEST")
-        print("Request Object DATA:", request.query_params)
-
         page = int(request.query_params.get("Page"))
         search_query = request.query_params.get("Query")
-        print(page, search_query)
 
         searchquery = search_query.upper()
         data = Fetched_Data.fetch_user_data(searchquery)
@@ -209,8 +199,7 @@ def get_paginated_data(request, **kwargs) -> response.JsonResponse:
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    except Exception as e:
-        print(e)
+    except Exception:
         return response.JsonResponse(
             {"error": "Error Occured While Getting Data", "success_status": False},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,

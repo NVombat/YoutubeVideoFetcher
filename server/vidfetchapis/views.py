@@ -19,9 +19,6 @@ class FetchVidData(APIView):
         Returns:
             JsonResponse
         """
-
-        print("Fetching Video Data API")
-
         vid_data = fetch_vid_data(request, **kwargs)
 
         if vid_data:
@@ -50,9 +47,6 @@ class GetStoredData(APIView):
         Returns:
             JsonResponse
         """
-
-        print("Getting DB Data API")
-
         db_data = get_paginated_data(request, **kwargs)
 
         return db_data
