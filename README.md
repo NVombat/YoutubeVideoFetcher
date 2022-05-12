@@ -16,7 +16,7 @@
 ### Clone The Repository :
 
 ```
-git clone https://github.com/NVombatYoutubeVideoFetcher.git
+git clone https://github.com/NVombat/YoutubeVideoFetcher.git
 cd server
 ```
 
